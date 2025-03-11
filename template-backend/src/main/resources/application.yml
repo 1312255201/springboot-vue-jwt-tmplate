@@ -1,1 +1,7 @@
-spring.application.name=template-backend
+spring:
+  application:
+    name: template-backend
+  security:
+    jwt:
+      key: abcdefgijk
+      expire: 7
