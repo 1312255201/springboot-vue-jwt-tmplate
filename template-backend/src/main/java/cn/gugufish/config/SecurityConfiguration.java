@@ -1,13 +1,16 @@
 package cn.gugufish.config;
 
 import cn.gugufish.entity.RestBean;
+import cn.gugufish.entity.dto.Account;
 import cn.gugufish.entity.vo.response.AuthorizeVO;
 import cn.gugufish.filter.JwtAuthorizeFilter;
+import cn.gugufish.service.AccountService;
 import cn.gugufish.utils.JwtUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,6 +32,8 @@ public class SecurityConfiguration {
     JwtUtils jwtUtils;
     @Resource
     JwtAuthorizeFilter  jwtAuthorizeFilter;
+    @Resource
+    AccountService accountService;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -63,12 +68,13 @@ public class SecurityConfiguration {
                                         Authentication authentication) throws IOException {
         response.setContentType("application/json;charset=utf-8");
         User user = (User)authentication.getPrincipal();
-        String token = jwtUtils.createJwt(user,1,"小明");
-        AuthorizeVO vo = new AuthorizeVO();
-        vo.setExpire(jwtUtils.expireTime());
-        vo.setRole("");
-        vo.setToken(token);
-        vo.setUsername("小明");
+        Account account = accountService.findAccountByNameOrEmail(user.getUsername());
+        String token = jwtUtils.createJwt(user,account.getId(), account.getUsername());
+        AuthorizeVO vo = account.asViewObject(AuthorizeVO.class,v->{
+            v.setExpire(jwtUtils.expireTime());
+            v.setToken(token);
+        });
+
         response.getWriter().write(RestBean.success(vo).asJsonString());
     }
     public void OnLogoutSuccess(HttpServletRequest request,
