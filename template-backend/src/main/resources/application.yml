@@ -10,3 +10,12 @@ spring:
     username: root
     password: scp778899
     driver-class-name: com.mysql.cj.jdbc.Driver
+  web:
+    cors:
+      origin: '*'
+      credentials: false
+      methods: '*'
+    flow:
+      period: 5
+      limit: 100
+      block: 30
