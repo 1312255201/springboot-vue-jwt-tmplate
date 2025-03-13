@@ -1,102 +1,119 @@
 import axios from "axios";
 import {ElMessage} from "element-plus";
+import router from "@/router";
 
-const authItemNmae = "access_token"
+const authItemName = "authorize"
 
-const defaultFailure = (message, code, url) => {
-    console.warn(`请求地址:${url},状态码:${code},错误信息${message}`)
+const accessHeader = () => {
+    return {
+        'Authorization': `Bearer ${takeAccessToken()}`
+    }
+}
+
+const defaultError = (error) => {
+    console.error(error)
+    const status = error.response.status
+    if (status === 429) {
+        ElMessage.error(error.response.data.message)
+    } else {
+        ElMessage.error('发生了一些错误，请联系管理员')
+    }
+}
+
+const defaultFailure = (message, status, url) => {
+    console.warn(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`)
     ElMessage.warning(message)
 }
 
-const defaultError = (err) => {
-    console.error(err)
-    ElMessage.warning('发生了一些错误，请联系管理员')
-}
-
 function takeAccessToken() {
-    const str = localStorage.getItem(authItemNmae) || sessionStorage.getItem(authItemNmae)
-    if(!str) return null;
+    const str = localStorage.getItem(authItemName) || sessionStorage.getItem(authItemName);
+    if(!str) return null
     const authObj = JSON.parse(str)
-    if(authObj.expire < new Date()){
+    if(new Date(authObj.expire) <= new Date()) {
         deleteAccessToken()
-        ElMessage.warning('登录信息已过期，请重新登录')
+        ElMessage.warning("登录状态已过期，请重新登录！")
         return null
     }
     return authObj.token
 }
 
-function storeAccessToken(token, remember, expire){
-    const authObj = {token: token, expire: expire}
+function storeAccessToken(remember, token, expire){
+    const authObj = {
+        token: token,
+        expire: expire
+    }
     const str = JSON.stringify(authObj)
     if(remember)
-        localStorage.setItem(authItemNmae,str)
+        localStorage.setItem(authItemName, str)
     else
-        sessionStorage.setItem(authItemNmae,str)
+        sessionStorage.setItem(authItemName, str)
 }
 
-function deleteAccessToken(){
-    localStorage.removeItem(authItemNmae)
-    sessionStorage.removeItem(authItemNmae)
+function deleteAccessToken(redirect = false) {
+    localStorage.removeItem(authItemName)
+    sessionStorage.removeItem(authItemName)
+    if(redirect) {
+        router.push({ name: 'welcome-login' })
+    }
 }
 
-function accessHeader(){
-    const token = takeAccessToken()
-    return token ? {
-        'Authorization' : `Bearer ${takeAccessToken()}`
-    }:{}
-}
-
-function internalPost(url, data, header, success, failure, error = defaultError) {
-    axios.post(url,data,{headers:header}).then(({data})=>{
-        if(data.code === 200){
-            success(data.data,)
-        }else{
-            failure(data.message,data.code,url)
+function internalPost(url, data, headers, success, failure, error = defaultError){
+    axios.post(url, data, { headers: headers }).then(({data}) => {
+        if(data.code === 200) {
+            success(data.data)
+        } else if(data.code === 401) {
+            failure('登录状态已过期，请重新登录！')
+            deleteAccessToken(true)
+        } else {
+            failure(data.message, data.code, url)
         }
     }).catch(err => error(err))
 }
 
-function internalGet(url, header, success, failure, error = defaultError) {
-    axios.get(url,{headers:header}).then(({data})=>{
-        if(data.code === 200){
-            success(data.data,)
-        }else{
-            failure(data.message,data.code,url)
+function internalGet(url, headers, success, failure, error = defaultError){
+    axios.get(url, { headers: headers }).then(({data}) => {
+        if(data.code === 200) {
+            success(data.data)
+        } else if(data.code === 401) {
+            failure('登录状态已过期，请重新登录！')
+            deleteAccessToken(true)
+        } else {
+            failure(data.message, data.code, url)
         }
     }).catch(err => error(err))
 }
 
-function get(url, success, failure= defaultFailure) {
-    internalGet(url,accessHeader(),success,failure)
-}
-
-function post(url,data, success, failure= defaultFailure) {
-    internalPost(url,data,accessHeader(),success,failure)
-}
-
-function login(username, password, remember, success, failure = defaultFailure) {
-    internalPost('/api/auth/login',{
+function login(username, password, remember, success, failure = defaultFailure){
+    internalPost('/api/auth/login', {
         username: username,
         password: password
-    },{
-        'Content-Type' : 'application/x-www-form-urlencoded'
-    },(data)=>{
-        storeAccessToken(data.token,remember,data.expire)
-        ElMessage.success(`登录成功,欢迎${data.username} 来到我们的系统`)
+    }, {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }, (data) => {
+        storeAccessToken(remember, data.token, data.expire)
+        ElMessage.success(`登录成功，欢迎 ${data.username} 来到我们的系统`)
         success(data)
-    },failure)
+    }, failure)
 }
 
-function logout(success,failure = defaultFailure){
-    get('/api/auth/logout',()=>{
+function post(url, data, success, failure = defaultFailure) {
+    internalPost(url, data, accessHeader() , success, failure)
+}
+
+function logout(success, failure = defaultFailure){
+    get('/api/auth/logout', () => {
         deleteAccessToken()
-        ElMessage.success('退出登录成功，欢迎您再次使用')
+        ElMessage.success(`退出登录成功，欢迎您再次使用`)
         success()
-    },failure)
+    }, failure)
 }
 
-function unauthorized(){
+function get(url, success, failure = defaultFailure) {
+    internalGet(url, accessHeader(), success, failure)
+}
+
+function unauthorized() {
     return !takeAccessToken()
 }
 
-export {login , logout , get ,post, unauthorized}
+export { post, get, login, logout, unauthorized }

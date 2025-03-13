@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-
 /**
  * 跨域配置过滤器，仅处理跨域，添加跨域响应头
  */

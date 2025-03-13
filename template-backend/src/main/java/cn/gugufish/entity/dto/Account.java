@@ -9,6 +9,9 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * 数据库中的用户信息
+ */
 @Data
 @TableName("db_account")
 @AllArgsConstructor
