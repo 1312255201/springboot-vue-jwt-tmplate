@@ -7,21 +7,21 @@
         <div style="margin-top: 50px">
             <el-form :model="form" :rules="rules" @validate="onValidate" ref="formRef">
                 <el-form-item prop="username">
-                    <el-input v-model="form.username" :maxlength="8" type="text" placeholder="用户名">
+                    <el-input v-model="form.username" :maxlength="20" type="text" placeholder="用户名">
                         <template #prefix>
                             <el-icon><User /></el-icon>
                         </template>
                     </el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                    <el-input v-model="form.password" :maxlength="16" type="password" placeholder="密码">
+                    <el-input v-model="form.password" :maxlength="20" type="password" placeholder="密码">
                         <template #prefix>
                             <el-icon><Lock /></el-icon>
                         </template>
                     </el-input>
                 </el-form-item>
                 <el-form-item prop="password_repeat">
-                    <el-input v-model="form.password_repeat" :maxlength="16" type="password" placeholder="重复密码">
+                    <el-input v-model="form.password_repeat" :maxlength="20" type="password" placeholder="重复密码">
                         <template #prefix>
                             <el-icon><Lock /></el-icon>
                         </template>
@@ -101,11 +101,11 @@ const validatePassword = (rule, value, callback) => {
 const rules = {
     username: [
         { validator: validateUsername, trigger: ['blur', 'change'] },
-        { min: 2, max: 8, message: '用户名的长度必须在2-8个字符之间', trigger: ['blur', 'change'] },
+        { min: 2, max: 20, message: '用户名的长度必须在2-20个字符之间', trigger: ['blur', 'change'] },
     ],
     password: [
         { required: true, message: '请输入密码', trigger: 'blur' },
-        { min: 6, max: 16, message: '密码的长度必须在6-16个字符之间', trigger: ['blur', 'change'] }
+        { min: 6, max: 20, message: '密码的长度必须在6-20个字符之间', trigger: ['blur', 'change'] }
     ],
     password_repeat: [
         { validator: validatePassword, trigger: ['blur', 'change'] },

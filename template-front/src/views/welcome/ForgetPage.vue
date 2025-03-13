@@ -40,6 +40,14 @@
                         </el-form-item>
                     </el-form>
                 </div>
+                <el-row style="margin-top: 5px">
+                  <el-col :span="12" style="text-align: left">
+                    <el-link @click="router.push('/register')">没有账号？</el-link>
+                  </el-col>
+                  <el-col :span="12" style="text-align: right">
+                    <el-link @click="router.push('/')">返回登录</el-link>
+                  </el-col>
+                </el-row>
                 <div style="margin-top: 70px">
                     <el-button @click="confirmReset()" style="width: 270px;" type="danger" plain>开始重置密码</el-button>
                 </div>
@@ -54,14 +62,14 @@
                 <div style="margin-top: 50px">
                     <el-form :model="form" :rules="rules" @validate="onValidate" ref="formRef">
                         <el-form-item prop="password">
-                            <el-input v-model="form.password" :maxlength="16" type="password" placeholder="新密码">
+                            <el-input v-model="form.password" :maxlength="20" type="password" placeholder="新密码">
                                 <template #prefix>
                                     <el-icon><Lock /></el-icon>
                                 </template>
                             </el-input>
                         </el-form-item>
                         <el-form-item prop="password_repeat">
-                            <el-input v-model="form.password_repeat" :maxlength="16" type="password" placeholder="重复新密码">
+                            <el-input v-model="form.password_repeat" :maxlength="20" type="password" placeholder="重复新密码">
                                 <template #prefix>
                                     <el-icon><Lock /></el-icon>
                                 </template>
