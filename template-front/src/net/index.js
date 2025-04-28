@@ -116,4 +116,10 @@ function unauthorized() {
     return !takeAccessToken()
 }
 
+export const apiStudentList = (page, size, success) =>
+    get(`api/student/list?page=${page}&size=${size}`, success)
+
+export const apiStudentSave = (data, success) =>
+    post('/api/student/save', data, success)
+
 export { post, get, login, logout, unauthorized }

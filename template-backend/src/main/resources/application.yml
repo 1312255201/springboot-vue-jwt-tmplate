@@ -10,8 +10,8 @@ spring:
     password: temlate
   rabbitmq:
     addresses: localhost
-    username: admin
-    password: admin
+    username: root
+    password: 123456
     virtual-host: /
   datasource:
     url: jdbc:mysql://localhost:3306/test
